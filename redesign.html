@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Streamline — Netflix UI Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0B0D;
+    --surface:#17171C;
+    --surface2:#1F2026;
+    --ember:#E8432D;
+    --ember-dim:#B8341F;
+    --gold:#E8B84B;
+    --paper:#F2F0EC;
+    --muted:#8E8C96;
+    --line:#2B2B33;
+
+    --display: 'Fraunces', serif;
+    --body: 'Inter', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:#0A0A0C;
+    color:var(--paper);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ===== case study chrome ===== */
+  .casehead{
+    padding:48px 24px 24px;
+    max-width:1100px; margin:0 auto;
+  }
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ember); margin-bottom:10px;}
+  .casehead h1{font-family:var(--display); font-weight:600; font-size:clamp(28px,5vw,46px); line-height:1.05; max-width:760px;}
+  .casehead p{color:var(--muted); margin-top:14px; max-width:600px; font-size:14.5px; line-height:1.6;}
+
+  .tabs{
+    position:sticky; top:0; z-index:50;
+    display:flex; gap:4px; padding:14px 24px;
+    background:rgba(10,10,12,0.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    max-width:1100px; margin:0 auto; flex-wrap:wrap;
+  }
+  .tab{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:0.04em;
+    padding:8px 14px; border-radius:999px; cursor:pointer;
+    border:1px solid var(--line); color:var(--muted);
+  }
+  .tab:hover{color:var(--paper); border-color:var(--muted);}
+  .tab.active{background:var(--ember); color:#fff; border-color:var(--ember);}
+
+  section{max-width:1100px; margin:0 auto; padding:56px 24px;}
+  section h2{font-family:var(--display); font-size:26px; font-weight:600; margin-bottom:8px;}
+  section > .desc{color:var(--muted); font-size:13.5px; max-width:620px; margin-bottom:32px; line-height:1.6;}
+
+  /* ===== MOOD BOARD ===== */
+  .moodgrid{
+    display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:120px;
+    gap:10px;
+  }
+  .mood-tile{border-radius:8px; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:12px;}
+  .mood-tile span{font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:rgba(255,255,255,0.85); background:rgba(0,0,0,0.35); padding:3px 8px; border-radius:4px;}
+  .mood-tile.span2{grid-row:span 2;}
+  .mwords{
+    margin-top:28px; display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .mword{font-family:var(--display); font-style:italic; font-size:15px; color:var(--paper); border-bottom:1px solid var(--line); padding-bottom:2px;}
+
+  /* ===== STYLE GUIDE ===== */
+  .swatchrow{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:40px;}
+  .swatch{width:120px;}
+  .swatch .chip{height:70px; border-radius:8px; border:1px solid var(--line); margin-bottom:8px;}
+  .swatch .name{font-size:12px; font-weight:600;}
+  .swatch .hex{font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+
+  .typesample{margin-bottom:22px; border-bottom:1px solid var(--line); padding-bottom:18px;}
+  .typesample .tag{font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
+  .t-display{font-family:var(--display); font-size:38px; font-weight:600;}
+  .t-h2{font-family:var(--display); font-size:24px; font-weight:600;}
+  .t-body{font-family:var(--body); font-size:15px; color:var(--paper);}
+  .t-mono{font-family:var(--mono); font-size:13px; color:var(--muted);}
+
+  .compgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:24px;}
+  .comp-card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px;}
+  .comp-card .tag{font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase; margin-bottom:14px; letter-spacing:0.06em;}
+
+  .btn{display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13.5px; padding:10px 18px; border-radius:6px; cursor:pointer; border:none;}
+  .btn-primary{background:var(--ember); color:#fff;}
+  .btn-ghost{background:transparent; border:1px solid var(--muted); color:var(--paper);}
+  .btn-row{display:flex; gap:10px; margin-bottom:6px;}
+
+  .demo-card{width:140px; border-radius:8px; overflow:hidden; border:1px solid var(--line); background:var(--surface2);}
+  .demo-card .thumb{height:80px;}
+  .demo-card .meta{padding:8px;}
+  .demo-card .meta .t{font-size:11.5px; font-weight:600;}
+  .demo-card .meta .m{font-family:var(--mono); font-size:9.5px; color:var(--gold); margin-top:2px;}
+
+  /* ===== shared show-card component used in mockups ===== */
+  .grain{
+    position:absolute; inset:0; pointer-events:none; opacity:0.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .card{
+    border-radius:6px; overflow:hidden; position:relative; flex-shrink:0; cursor:pointer;
+    border:1px solid transparent; transition:border-color .15s;
+  }
+  .card:hover, .card:focus-visible{border-color:var(--ember);}
+  .card .thumb{display:flex; align-items:flex-end; padding:8px; position:relative;}
+  .card .badges{position:absolute; top:6px; left:6px; display:flex; gap:4px;}
+  .badge{font-family:var(--mono); font-size:8px; padding:2px 6px; border-radius:3px; background:rgba(0,0,0,0.55); letter-spacing:0.04em;}
+  .badge.top10{background:var(--gold); color:#1a1a1a; font-weight:700;}
+  .card .titletag{font-family:var(--display); font-weight:600; font-size:13px; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.6);}
+  .card .meta{padding:7px 8px; font-size:10px; color:var(--muted); display:flex; gap:6px; align-items:center;}
+  .card .meta .match{color:#6FCF7A; font-weight:600;}
+
+  .rowhead{display:flex; align-items:baseline; justify-content:space-between; margin:0 0 10px;}
+  .rowhead h3{font-size:14px; font-weight:600;}
+  .rowhead .seeall{font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase;}
+
+  /* ===== DESKTOP MOCK FRAME ===== */
+  .frame-label{font-family:var(--mono); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;}
+  .desktop-frame{
+    border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    background:var(--ink);
+  }
+  .desktop-screen{ width:100%; }
+
+  .d-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px; background:linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    position:relative; z-index:3;
+  }
+  .d-nav .left{display:flex; align-items:center; gap:26px;}
+  .wordmark{font-family:var(--display); font-weight:700; font-size:19px; color:var(--ember); letter-spacing:0.01em;}
+  .d-navlinks{display:flex; gap:18px; font-size:12.5px; color:#D8D6DE;}
+  .d-navlinks span.current{color:#fff; font-weight:600;}
+  .d-nav .right{display:flex; align-items:center; gap:16px;}
+  .searchpill{display:flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:11.5px; color:var(--muted);}
+  .avatar{width:28px; height:28px; border-radius:6px; background:var(--surface2); border:1px solid var(--line);}
+
+  .d-hero{
+    position:relative; height:420px; display:flex; align-items:flex-end; padding:40px 28px;
+    background:
+      linear-gradient(to top, var(--ink) 5%, transparent 55%),
+      linear-gradient(to right, rgba(0,0,0,0.55), transparent 60%),
+      linear-gradient(135deg,#3a1410,#1c1c22 55%,#10141c);
+    margin-top:-64px;
+  }
+  .d-hero-inner{max-width:480px; position:relative; z-index:2;}
+  .d-hero .kicker{font-family:var(--mono); font-size:11px; color:var(--gold); letter-spacing:0.08em; margin-bottom:10px;}
+  .d-hero h2{font-family:var(--display); font-size:46px; font-weight:700; line-height:1.02; margin-bottom:14px;}
+  .d-hero p{font-size:13.5px; color:#D8D6DE; line-height:1.55; margin-bottom:20px;}
+
+  .d-rows{padding:0 28px 36px; position:relative; z-index:2; margin-top:-30px;}
+  .d-row{margin-bottom:30px;}
+  .d-cardlist{display:flex; gap:10px; overflow:hidden;}
+  .d-cardlist.featured .card{width:230px;}
+  .d-cardlist.featured .thumb{height:130px;}
+  .d-cardlist .card{width:160px;}
+  .d-cardlist .thumb{height:92px;}
+
+  /* ===== MOBILE FRAME ===== */
+  .mobile-frame{
+    width:320px; border:2px solid var(--line); border-radius:26px; overflow:hidden;
+    background:var(--ink); margin:0 auto;
+  }
+  .mobile-screen{height:640px; overflow-y:auto;}
+  .m-nav{
+    display:flex; align-items:center; justify-content:space-between; padding:14px 16px;
+    border-bottom:1px solid var(--line); background:var(--ink); position:sticky; top:0; z-index:5;
+  }
+  .m-nav .wordmark{font-size:15px;}
+  .m-icons{display:flex; gap:14px; color:var(--muted); font-size:14px;}
+  .m-hero{
+    height:230px; position:relative; display:flex; align-items:flex-end; padding:18px;
+    background:
+      linear-gradient(to top, var(--ink), transparent 60%),
+      linear-gradient(135deg,#3a1410,#1c1c22 55%,#10141c);
+  }
+  .m-hero-inner{position:relative; z-index:2;}
+  .m-hero .kicker{font-family:var(--mono); font-size:9.5px; color:var(--gold); letter-spacing:0.06em; margin-bottom:6px;}
+  .m-hero h2{font-family:var(--display); font-size:25px; font-weight:700; line-height:1.05; margin-bottom:10px;}
+  .m-btnrow{display:flex; gap:8px;}
+  .m-btnrow .btn{font-size:12px; padding:8px 14px;}
+
+  .m-rows{padding:18px 14px 30px;}
+  .m-row{margin-bottom:24px;}
+  .m-cardlist{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;}
+  .m-cardlist .card{width:120px;}
+  .m-cardlist .thumb{height:72px;}
+  .m-cardlist.featured .card{width:160px;}
+  .m-cardlist.featured .thumb{height:96px;}
+
+  .m-tabbar{
+    display:flex; justify-content:space-around; padding:10px 0;
+    border-top:1px solid var(--line); position:sticky; bottom:0; background:var(--ink);
+    font-size:9px; color:var(--muted);
+  }
+  .m-tabbar .it{display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .m-tabbar .it.current{color:#fff;}
+  .m-tabbar .dot{width:5px; height:5px; border-radius:50%; background:currentColor;}
+
+  .annotations{
+    margin-top:20px; display:grid; grid-template-columns:repeat(2,1fr); gap:14px;
+  }
+  .anno{font-size:12px; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:12px 14px; line-height:1.5;}
+  .anno b{color:var(--paper);}
+
+  .frames-wrap{display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap;}
+
+  @media (max-width:760px){
+    .moodgrid{grid-template-columns:repeat(2,1fr);}
+    .compgrid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="casehead">
+  <div class="eyebrow">UI Redesign Case Study</div>
+  <h1>Rebuilding the Netflix browse screen around clarity, not just density.</h1>
+  <p>Heuristic evaluation, mood board, style guide, and high-fidelity desktop + mobile mockups for a redesign of Netflix's web browsing experience. Full written evaluation is in <code>heuristic-evaluation.md</code>.</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-target="mood">Mood Board</div>
+  <div class="tab" data-target="style">Style Guide</div>
+  <div class="tab" data-target="desktop">Desktop Mockup</div>
+  <div class="tab" data-target="mobile">Mobile Mockup</div>
+</div>
+
+<!-- ================= MOOD BOARD ================= -->
+<section id="mood">
+  <h2>Mood Board</h2>
+  <div class="desc">Direction: late-night cinema, not dashboard. Keep the dark canvas Netflix is known for, but trade flat density for warmer contrast, a confident editorial title face, and clearer focal points.</div>
+
+  <div class="moodgrid">
+    <div class="mood-tile span2" style="background:linear-gradient(160deg,#3a1410,#1c1c22 60%,#10141c);"><span>cinematic backdrop</span></div>
+    <div class="mood-tile" style="background:#E8432D;"><span>ember — signature accent</span></div>
+    <div class="mood-tile" style="background:#0B0B0D; border:1px solid #2B2B33;"><span>ink — base canvas</span></div>
+    <div class="mood-tile" style="background:linear-gradient(135deg,#E8B84B,#B8341F);"><span>gold → ember gradient</span></div>
+    <div class="mood-tile" style="background:#1F2026;"><span>surface / card</span></div>
+    <div class="mood-tile span2" style="background:radial-gradient(circle at 30% 30%, #3a1410, #0B0B0D 70%);"><span>spotlight glow — signature motif</span></div>
+    <div class="mood-tile" style="background:#17171C; display:flex; align-items:center; justify-content:center;"><span style="font-family:'Fraunces',serif; font-style:italic; font-size:18px; background:none; padding:0;">Aa</span></div>
+  </div>
+
+  <div class="mwords">
+    <div class="mword">editorial, not catalog</div>
+    <div class="mword">spotlight over grid</div>
+    <div class="mword">film grain, low gloss</div>
+    <div class="mword">confident hierarchy</div>
+    <div class="mword">tap-first, not hover-first</div>
+  </div>
+</section>
+
+<!-- ================= STYLE GUIDE ================= -->
+<section id="style">
+  <h2>Style Guide</h2>
+  <div class="desc">A condensed system: one signature display face used sparingly, one workhorse UI face, and a mono face for system/metadata text — directly addressing the "flat hierarchy" issue from the heuristic evaluation.</div>
+
+  <div class="swatchrow">
+    <div class="swatch"><div class="chip" style="background:#0B0B0D;"></div><div class="name">Ink</div><div class="hex">#0B0B0D — canvas</div></div>
+    <div class="swatch"><div class="chip" style="background:#17171C;"></div><div class="name">Surface</div><div class="hex">#17171C — cards/nav</div></div>
+    <div class="swatch"><div class="chip" style="background:#E8432D;"></div><div class="name">Ember</div><div class="hex">#E8432D — primary accent</div></div>
+    <div class="swatch"><div class="chip" style="background:#E8B84B;"></div><div class="name">Gold</div><div class="hex">#E8B84B — featured/top 10</div></div>
+    <div class="swatch"><div class="chip" style="background:#F2F0EC;"></div><div class="name">Paper</div><div class="hex">#F2F0EC — primary text</div></div>
+    <div class="swatch"><div class="chip" style="background:#8E8C96;"></div><div class="name">Muted</div><div class="hex">#8E8C96 — secondary text</div></div>
+  </div>
+
+  <div class="typesample"><div class="tag">Display / Fraunces — titles only</div><div class="t-display">The Last Light District</div></div>
+  <div class="typesample"><div class="tag">Heading / Fraunces 600</div><div class="t-h2">Continue Watching</div></div>
+  <div class="typesample"><div class="tag">Body / Inter</div><div class="t-body">A detective inherits her late partner's unfinished case — and his ghost won't stop offering opinions on it.</div></div>
+  <div class="typesample" style="border-bottom:none;"><div class="tag">Metadata / JetBrains Mono — system &amp; data text only</div><div class="t-mono">96% MATCH · 2024 · 3 SEASONS · 16+</div></div>
+
+  <div class="compgrid">
+    <div class="comp-card">
+      <div class="tag">Buttons</div>
+      <div class="btn-row"><div class="btn btn-primary">▶ Play</div><div class="btn btn-ghost">+ My List</div></div>
+      <div class="btn-row"><div class="btn btn-ghost" style="padding:10px 14px;">i Details</div></div>
+    </div>
+    <div class="comp-card">
+      <div class="tag">Show card (no hover needed)</div>
+      <div class="demo-card">
+        <div class="thumb" style="background:linear-gradient(135deg,#3a1410,#1c1c22);"></div>
+        <div class="meta"><div class="t">Static Bloom</div><div class="m">94% MATCH · 16+</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DESKTOP MOCKUP ================= -->
+<section id="desktop">
+  <h2>High-Fidelity Mockup — Desktop</h2>
+  <div class="desc">Hierarchy fix: hero gets full visual weight, "Continue Watching" sits immediately after as a larger card row, then personalized and genre rows step down in size — solving the "everything looks equally important" issue.</div>
+
+  <div class="frame-label">Viewport ~1280px</div>
+  <div class="desktop-frame">
+    <div class="desktop-screen">
+      <div class="d-nav">
+        <div class="left">
+          <div class="wordmark">STREAMLINE</div>
+          <div class="d-navlinks"><span class="current">Home</span><span>Series</span><span>Films</span><span>My List</span></div>
+        </div>
+        <div class="right">
+          <div class="searchpill">🔍 Search titles, genres...</div>
+          <div class="avatar"></div>
+        </div>
+      </div>
+
+      <div class="d-hero">
+        <div class="grain"></div>
+        <div class="d-hero-inner">
+          <div class="kicker">NEW SEASON · TOP 10</div>
+          <h2>The Last Light District</h2>
+          <p>A detective inherits her late partner's unfinished case — and his ghost won't stop offering opinions on it.</p>
+          <div class="btn-row"><div class="btn btn-primary">▶ Play</div><div class="btn btn-ghost">i More Info</div></div>
+        </div>
+      </div>
+
+      <div class="d-rows">
+        <div class="d-row">
+          <div class="rowhead"><h3>Continue Watching</h3><div class="seeall">See all</div></div>
+          <div class="d-cardlist featured">
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#2c3b2c,#10141c);"><span class="titletag">Static Bloom</span></div><div class="meta"><span class="match">94% match</span><span>· S2 E4</span></div></div>
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#3a2a10,#1c1c22);"><span class="titletag">Harbor Noir</span></div><div class="meta"><span class="match">88% match</span><span>· Film</span></div></div>
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#1c2a3a,#101414);"><span class="titletag">Glass Lantern</span></div><div class="meta"><span class="match">81% match</span><span>· S1 E2</span></div></div>
+          </div>
+        </div>
+
+        <div class="d-row">
+          <div class="rowhead"><h3>Top 10 Today</h3><div class="seeall">See all</div></div>
+          <div class="d-cardlist">
+            <div class="card"><div class="badges"><span class="badge top10">#1</span></div><div class="thumb" style="background:linear-gradient(135deg,#3a1410,#1c1c22);"><span class="titletag">Last Light District</span></div><div class="meta"><span class="match">96% match</span></div></div>
+            <div class="card"><div class="badges"><span class="badge top10">#2</span></div><div class="thumb" style="background:linear-gradient(135deg,#2a1c3a,#14101c);"><span class="titletag">Crimson Hour</span></div><div class="meta"><span class="match">90% match</span></div></div>
+            <div class="card"><div class="badges"><span class="badge top10">#3</span></div><div class="thumb" style="background:linear-gradient(135deg,#103a2c,#101c1a);"><span class="titletag">Foxglove</span></div><div class="meta"><span class="match">85% match</span></div></div>
+            <div class="card"><div class="badges"><span class="badge top10">#4</span></div><div class="thumb" style="background:linear-gradient(135deg,#3a2a10,#1a1410);"><span class="titletag">Northbound</span></div><div class="meta"><span class="match">77% match</span></div></div>
+          </div>
+        </div>
+
+        <div class="d-row">
+          <div class="rowhead"><h3>Because you watched Static Bloom</h3><div class="seeall">See all</div></div>
+          <div class="d-cardlist">
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#1c1c3a,#101014);"><span class="titletag">Faultlines</span></div><div class="meta"><span class="match">82% match</span></div></div>
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#3a1c2a,#141014);"><span class="titletag">Ember Road</span></div><div class="meta"><span class="match">79% match</span></div></div>
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#1c3a2a,#10141a);"><span class="titletag">Quietfield</span></div><div class="meta"><span class="match">74% match</span></div></div>
+            <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#2a2a1c,#141410);"><span class="titletag">Marigold</span></div><div class="meta"><span class="match">70% match</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotations">
+    <div class="anno"><b>Metadata on the card.</b> Match %, season/episode all sit on the card itself — no hover needed, fixing heuristic #1.</div>
+    <div class="anno"><b>Size = priority.</b> Continue Watching cards are visibly larger than genre rows below — a deliberate hierarchy, fixing heuristic #8.</div>
+    <div class="anno"><b>Persistent search.</b> A full search field lives in the nav at all times instead of an icon-only toggle, fixing heuristic #7.</div>
+    <div class="anno"><b>Visible playback control.</b> Hero always shows Play/More Info, not an autoplaying trailer with a hidden mute button, fixing heuristic #3.</div>
+  </div>
+</section>
+
+<!-- ================= MOBILE MOCKUP ================= -->
+<section id="mobile">
+  <h2>High-Fidelity Mockup — Mobile</h2>
+  <div class="desc">Same component system, restyled rather than restructured (heuristic #4): cards keep their metadata and badges, rows scroll horizontally with larger tap targets, and a bottom tab bar replaces the top nav links.</div>
+
+  <div class="frame-label">Viewport ~360px</div>
+  <div class="frames-wrap">
+    <div class="mobile-frame">
+      <div class="mobile-screen">
+        <div class="m-nav">
+          <div class="wordmark">STREAMLINE</div>
+          <div class="m-icons"><span>🔍</span><span>👤</span></div>
+        </div>
+
+        <div class="m-hero">
+          <div class="grain"></div>
+          <div class="m-hero-inner">
+            <div class="kicker">NEW SEASON · TOP 10</div>
+            <h2>The Last Light District</h2>
+            <div class="m-btnrow"><div class="btn btn-primary">▶ Play</div><div class="btn btn-ghost">i Info</div></div>
+          </div>
+        </div>
+
+        <div class="m-rows">
+          <div class="m-row">
+            <div class="rowhead"><h3>Continue Watching</h3></div>
+            <div class="m-cardlist featured">
+              <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#2c3b2c,#10141c);"><span class="titletag">Static Bloom</span></div><div class="meta"><span class="match">94%</span><span>S2 E4</span></div></div>
+              <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#3a2a10,#1c1c22);"><span class="titletag">Harbor Noir</span></div><div class="meta"><span class="match">88%</span><span>Film</span></div></div>
+            </div>
+          </div>
+
+          <div class="m-row">
+            <div class="rowhead"><h3>Top 10 Today</h3></div>
+            <div class="m-cardlist">
+              <div class="card"><div class="badges"><span class="badge top10">#1</span></div><div class="thumb" style="background:linear-gradient(135deg,#3a1410,#1c1c22);"><span class="titletag">Last Light</span></div><div class="meta"><span class="match">96%</span></div></div>
+              <div class="card"><div class="badges"><span class="badge top10">#2</span></div><div class="thumb" style="background:linear-gradient(135deg,#2a1c3a,#14101c);"><span class="titletag">Crimson Hour</span></div><div class="meta"><span class="match">90%</span></div></div>
+              <div class="card"><div class="badges"><span class="badge top10">#3</span></div><div class="thumb" style="background:linear-gradient(135deg,#103a2c,#101c1a);"><span class="titletag">Foxglove</span></div><div class="meta"><span class="match">85%</span></div></div>
+            </div>
+          </div>
+
+          <div class="m-row">
+            <div class="rowhead"><h3>Because you watched Static Bloom</h3></div>
+            <div class="m-cardlist">
+              <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#1c1c3a,#101014);"><span class="titletag">Faultlines</span></div><div class="meta"><span class="match">82%</span></div></div>
+              <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#3a1c2a,#141014);"><span class="titletag">Ember Road</span></div><div class="meta"><span class="match">79%</span></div></div>
+              <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#1c3a2a,#10141a);"><span class="titletag">Quietfield</span></div><div class="meta"><span class="match">74%</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-tabbar">
+          <div class="it current"><div class="dot"></div>Home</div>
+          <div class="it"><div class="dot"></div>Series</div>
+          <div class="it"><div class="dot"></div>Films</div>
+          <div class="it"><div class="dot"></div>My List</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="annotations" style="grid-template-columns:1fr; max-width:320px;">
+      <div class="anno"><b>Tap-first.</b> Every metadata badge that was hover-only on the old desktop site is always visible here — mobile drove the component spec, desktop inherited it.</div>
+      <div class="anno"><b>Thumb-reachable nav.</b> Primary navigation moved to a bottom tab bar, matching how the device is actually held.</div>
+      <div class="anno"><b>Same card, same data.</b> Identical component to desktop — only size/columns changed, per heuristic #4 (consistency).</div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t=>{
+    t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.target).scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+</script>
+
+</body>
+</html>
