@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Habitly — Low-Fi Wireframes</title>
+<style>
+  :root{
+    --line:#999;
+    --lineDark:#555;
+    --boxFill:#e2e2e2;
+    --boxFillLight:#eee;
+    --bg:#f3f3f3;
+    --phoneBg:#fff;
+    --text:#444;
+    --textLight:#888;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    margin:0;
+    padding:24px;
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  h1{font-size:18px; letter-spacing:0.5px; margin-bottom:4px;}
+  .sub{font-size:12px; color:var(--textLight); margin-bottom:20px;}
+
+  .layout{display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; justify-content:center;}
+
+  .phone{
+    width:300px;
+    height:600px;
+    background:var(--phoneBg);
+    border:2px solid var(--lineDark);
+    border-radius:22px;
+    position:relative;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .notch{
+    width:90px; height:14px; background:var(--lineDark);
+    border-radius:0 0 10px 10px;
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    z-index:5;
+  }
+  .screen{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    padding:30px 16px 16px;
+    display:none;
+    flex-direction:column;
+  }
+  .screen.active{display:flex;}
+
+  /* generic wireframe primitives */
+  .box{
+    background:var(--boxFill);
+    border:1.5px dashed var(--line);
+    border-radius:4px;
+  }
+  .box-solid{
+    background:var(--boxFillLight);
+    border:1.5px solid var(--lineDark);
+    border-radius:4px;
+  }
+  .line{ height:8px; background:var(--line); border-radius:2px; }
+  .line.w100{width:100%;} .line.w80{width:80%;} .line.w60{width:60%;} .line.w40{width:40%;}
+  .label{font-size:10px; color:var(--textLight); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;}
+
+  .center{display:flex; align-items:center; justify-content:center; flex-direction:column; flex:1; gap:10px;}
+
+  /* top bar */
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .topbar .title{font-size:14px; font-weight:bold; color:var(--lineDark);}
+  .circle{width:26px; height:26px; border-radius:50%; background:var(--boxFill); border:1.5px dashed var(--line);}
+
+  /* habit row */
+  .habit-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px; margin-bottom:8px;
+    background:var(--boxFillLight); border:1px solid var(--line); border-radius:6px;
+  }
+  .checkbox{width:20px; height:20px; border:2px solid var(--lineDark); border-radius:4px; flex-shrink:0;}
+  .checkbox.checked{background:var(--lineDark);}
+  .habit-info{flex:1; display:flex; flex-direction:column; gap:4px;}
+  .streak{font-size:9px; color:var(--textLight); border:1px dashed var(--line); padding:2px 6px; border-radius:10px; align-self:flex-start;}
+
+  /* bottom nav */
+  .bottomnav{
+    display:flex; justify-content:space-around; align-items:center;
+    border-top:1.5px solid var(--lineDark);
+    padding-top:8px; margin-top:auto;
+  }
+  .navitem{display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; font-size:8px; color:var(--textLight);}
+  .navitem .circle{width:18px; height:18px;}
+  .navitem.current .circle{background:var(--lineDark); border-style:solid;}
+  .navitem.current{color:var(--lineDark); font-weight:bold;}
+
+  /* buttons */
+  .btn{
+    background:var(--boxFillLight); border:2px solid var(--lineDark);
+    border-radius:6px; padding:10px; text-align:center;
+    font-size:12px; font-weight:bold; color:var(--lineDark);
+    cursor:pointer;
+  }
+  .btn.primary{ background:var(--lineDark); color:#fff; }
+  .link{font-size:11px; color:var(--textLight); text-decoration:underline; text-align:center; cursor:pointer;}
+
+  .fab{
+    position:absolute; bottom:64px; right:18px;
+    width:44px; height:44px; border-radius:50%;
+    background:var(--lineDark); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; cursor:pointer; border:2px solid var(--lineDark);
+  }
+
+  .form-field{margin-bottom:14px;}
+  .input{height:32px; margin-top:4px;}
+
+  .dots{display:flex; gap:6px; justify-content:center; margin-top:10px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--line);}
+  .dot.active{background:var(--lineDark);}
+
+  .chart{
+    display:flex; align-items:flex-end; gap:6px; height:90px; padding:8px;
+    border:1px solid var(--line); border-radius:6px; background:var(--boxFillLight);
+  }
+  .bar{flex:1; background:var(--boxFill); border:1.5px dashed var(--line); border-radius:2px 2px 0 0;}
+
+  /* controls under phone */
+  .controls{margin-top:14px; display:flex; flex-wrap:wrap; gap:6px; max-width:300px;}
+  .ctrl-btn{
+    font-size:10px; padding:6px 8px; border:1px solid var(--lineDark);
+    background:#fff; border-radius:4px; cursor:pointer; color:var(--lineDark);
+  }
+  .ctrl-btn:hover{background:var(--boxFillLight);}
+
+  .annot{
+    width:260px; font-size:11.5px; line-height:1.5; color:var(--text);
+    background:#fff; border:1px solid var(--line); border-radius:6px; padding:14px;
+  }
+  .annot h3{font-size:12px; margin:0 0 8px; color:var(--lineDark);}
+  .annot ul{margin:0; padding-left:16px;}
+</style>
+</head>
+<body>
+
+<h1>Habitly — Low-Fidelity Wireframes</h1>
+<div class="sub">Click the buttons below the phone to step through the primary user flow. Grayscale / placeholder content is intentional at this fidelity.</div>
+
+<div class="layout">
+
+  <div class="phone">
+    <div class="notch"></div>
+
+    <!-- 1. SPLASH -->
+    <div class="screen active" id="splash">
+      <div class="center">
+        <div class="box-solid" style="width:70px;height:70px;border-radius:16px;"></div>
+        <div class="line w60"></div>
+        <div class="label">loading...</div>
+      </div>
+    </div>
+
+    <!-- 2. ONBOARDING -->
+    <div class="screen" id="onboarding">
+      <div class="center">
+        <div class="box" style="width:140px;height:140px;border-radius:12px;"></div>
+        <div class="line w80"></div>
+        <div class="line w60"></div>
+      </div>
+      <div class="dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+      <div style="display:flex; justify-content:space-between; margin-top:14px;">
+        <div class="link" onclick="goto('login')">Skip</div>
+        <div class="btn" style="padding:8px 16px;" onclick="goto('onboarding')">Next</div>
+      </div>
+    </div>
+
+    <!-- 3. LOGIN -->
+    <div class="screen" id="login">
+      <div class="topbar"><div class="line w40"></div></div>
+      <div class="center" style="flex:0; margin-bottom:20px;">
+        <div class="box" style="width:60px;height:60px;border-radius:50%;"></div>
+      </div>
+      <div class="form-field">
+        <div class="label">Email</div>
+        <div class="box input"></div>
+      </div>
+      <div class="form-field">
+        <div class="label">Password</div>
+        <div class="box input"></div>
+      </div>
+      <div class="btn primary" onclick="goto('home-empty')">Log In</div>
+      <div class="link" style="margin-top:12px;" onclick="goto('home-empty')">Continue as guest</div>
+      <div class="link" style="margin-top:auto;">Don't have an account? Sign up</div>
+    </div>
+
+    <!-- 4. HOME - EMPTY STATE -->
+    <div class="screen" id="home-empty">
+      <div class="topbar"><div class="title">Today</div><div class="circle"></div></div>
+      <div class="center">
+        <div class="box" style="width:100px;height:100px;border-radius:8px;"></div>
+        <div class="line w80"></div>
+        <div class="line w60"></div>
+        <div class="btn primary" style="margin-top:10px; width:160px;" onclick="goto('add-habit')">+ Add your first habit</div>
+      </div>
+      <div class="bottomnav">
+        <div class="navitem current"><div class="circle"></div>Home</div>
+        <div class="navitem" onclick="goto('profile')"><div class="circle"></div>Stats</div>
+        <div class="navitem"><div class="circle"></div>Settings</div>
+      </div>
+    </div>
+
+    <!-- 5. ADD HABIT -->
+    <div class="screen" id="add-habit">
+      <div class="topbar"><div class="line w40" onclick="goto('home-empty')" style="cursor:pointer;">&lt; Back</div><div class="title">New Habit</div></div>
+      <div class="form-field">
+        <div class="label">Habit name</div>
+        <div class="box input"></div>
+      </div>
+      <div class="form-field">
+        <div class="label">Icon</div>
+        <div style="display:flex; gap:8px;">
+          <div class="box" style="width:32px;height:32px;border-radius:6px;"></div>
+          <div class="box" style="width:32px;height:32px;border-radius:6px;"></div>
+          <div class="box" style="width:32px;height:32px;border-radius:6px;"></div>
+        </div>
+      </div>
+      <div class="form-field">
+        <div class="label">Frequency</div>
+        <div style="display:flex; gap:6px;">
+          <div class="box-solid" style="padding:6px 10px;font-size:10px;">Daily</div>
+          <div class="box" style="padding:6px 10px;font-size:10px;">Weekly</div>
+          <div class="box" style="padding:6px 10px;font-size:10px;">Custom</div>
+        </div>
+      </div>
+      <div class="form-field">
+        <div class="label">Reminder time</div>
+        <div class="box input" style="width:100px;"></div>
+      </div>
+      <div class="btn primary" style="margin-top:auto;" onclick="goto('home-filled')">Save Habit</div>
+    </div>
+
+    <!-- 6. HOME - FILLED -->
+    <div class="screen" id="home-filled" style="position:relative;">
+      <div class="topbar"><div class="title">Today</div><div class="circle"></div></div>
+
+      <div class="habit-row" onclick="goto('detail')" style="cursor:pointer;">
+        <div class="checkbox checked"></div>
+        <div class="habit-info"><div class="line w60"></div><div class="streak">streak: 5 days</div></div>
+      </div>
+      <div class="habit-row" onclick="goto('detail')" style="cursor:pointer;">
+        <div class="checkbox"></div>
+        <div class="habit-info"><div class="line w40"></div><div class="streak">streak: 2 days</div></div>
+      </div>
+      <div class="habit-row" onclick="goto('detail')" style="cursor:pointer;">
+        <div class="checkbox"></div>
+        <div class="habit-info"><div class="line w60"></div><div class="streak">streak: 0 days</div></div>
+      </div>
+
+      <div class="fab" onclick="goto('add-habit')">+</div>
+
+      <div class="bottomnav">
+        <div class="navitem current"><div class="circle"></div>Home</div>
+        <div class="navitem" onclick="goto('profile')"><div class="circle"></div>Stats</div>
+        <div class="navitem"><div class="circle"></div>Settings</div>
+      </div>
+    </div>
+
+    <!-- 7. HABIT DETAIL -->
+    <div class="screen" id="detail">
+      <div class="topbar"><div class="line w40" onclick="goto('home-filled')" style="cursor:pointer;">&lt; Back</div><div class="title">Habit</div></div>
+      <div class="box-solid" style="height:50px; display:flex; align-items:center; padding:0 10px; gap:10px;">
+        <div class="box" style="width:30px;height:30px;border-radius:6px;"></div>
+        <div class="line w60"></div>
+      </div>
+      <div class="label" style="margin-top:16px;">This week</div>
+      <div class="chart">
+        <div class="bar" style="height:30%;"></div>
+        <div class="bar" style="height:60%;"></div>
+        <div class="bar" style="height:80%;"></div>
+        <div class="bar" style="height:40%;"></div>
+        <div class="bar" style="height:90%;"></div>
+        <div class="bar" style="height:20%;"></div>
+        <div class="bar" style="height:70%;"></div>
+      </div>
+      <div class="label" style="margin-top:16px;">Current streak</div>
+      <div class="line w40" style="height:18px;"></div>
+      <div class="btn" style="margin-top:auto;">Edit habit</div>
+    </div>
+
+    <!-- 8. PROFILE -->
+    <div class="screen" id="profile">
+      <div class="topbar"><div class="title">Profile</div><div class="circle"></div></div>
+      <div class="center" style="flex:0; margin-bottom:14px;">
+        <div class="box" style="width:60px;height:60px;border-radius:50%;"></div>
+        <div class="line w40"></div>
+      </div>
+      <div class="label">Weekly overview</div>
+      <div class="chart">
+        <div class="bar" style="height:50%;"></div>
+        <div class="bar" style="height:70%;"></div>
+        <div class="bar" style="height:30%;"></div>
+        <div class="bar" style="height:90%;"></div>
+        <div class="bar" style="height:60%;"></div>
+        <div class="bar" style="height:40%;"></div>
+        <div class="bar" style="height:80%;"></div>
+      </div>
+      <div class="label" style="margin-top:16px;">Habits completed</div>
+      <div class="line w80"></div>
+      <div class="bottomnav">
+        <div class="navitem" onclick="goto('home-filled')"><div class="circle"></div>Home</div>
+        <div class="navitem current"><div class="circle"></div>Stats</div>
+        <div class="navitem"><div class="circle"></div>Settings</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <div class="controls" id="stepControls"></div>
+    <div class="annot" id="annotBox"></div>
+  </div>
+
+</div>
+
+<script>
+  const flow = [
+    {id:'splash', label:'1. Splash', note:'App launch screen. Just a placeholder logo box — purpose is brand recognition for under a second, not content.'},
+    {id:'onboarding', label:'2. Onboarding', note:'3-slide skimmable intro (dots show progress). "Skip" is always visible — research showed users abandon onboarding text walls.'},
+    {id:'login', label:'3. Login / Guest', note:'Guest mode is prominent because Starter Sam personas want to try the app immediately, not commit to an account first.'},
+    {id:'home-empty', label:'4. Home (empty)', note:'Empty state is a direct call-to-action ("Add your first habit") rather than a blank screen — turns emptiness into the next step of the flow.'},
+    {id:'add-habit', label:'5. Add Habit', note:'Minimal required fields: name, icon, frequency, reminder. Keeping this short matches the research finding that users want a small, well-tracked habit list.'},
+    {id:'home-filled', label:'6. Home (filled)', note:'Core loop screen. Checkbox + streak badge are the largest, highest-contrast elements — this is the 5-second daily interaction research called for.'},
+    {id:'detail', label:'7. Habit Detail', note:'Tapping a habit reveals streak history as a simple bar chart — addresses the "want progress, not just a checklist" insight.'},
+    {id:'profile', label:'8. Profile / Stats', note:'Weekly aggregate view for reflection, separate from the fast daily-logging screen so the two goals (log vs. reflect) don\\'t compete for space.'},
+  ];
+
+  function goto(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.ctrl-btn').forEach(b=>{
+      b.style.background = (b.dataset.id===id) ? 'var(--boxFillLight)' : '#fff';
+      b.style.fontWeight = (b.dataset.id===id) ? 'bold' : 'normal';
+    });
+    const f = flow.find(f=>f.id===id);
+    if(f) document.getElementById('annotBox').innerHTML = '<h3>'+f.label+'</h3>'+f.note;
+  }
+
+  const controls = document.getElementById('stepControls');
+  flow.forEach(f=>{
+    const b = document.createElement('div');
+    b.className='ctrl-btn';
+    b.textContent=f.label;
+    b.dataset.id=f.id;
+    b.onclick=()=>goto(f.id);
+    controls.appendChild(b);
+  });
+  goto('splash');
+</script>
+
+</body>
+</html>
