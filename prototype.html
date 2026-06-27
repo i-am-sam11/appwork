@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Habitly — Interactive Prototype</title>
+<style>
+  :root{
+    --ink:#1c1c1c;
+    --paper:#fafafa;
+    --surface:#f1f1f1;
+    --line:#d8d8d8;
+    --lineDark:#2a2a2a;
+    --muted:#8a8a8a;
+    --good:#4caf78;
+    --accent:#2a2a2a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family: -apple-system, "Inter", Arial, sans-serif;
+    background:#ececec;
+    margin:0; padding:24px;
+    display:flex; flex-direction:column; align-items:center;
+    color:var(--ink);
+  }
+  h1{font-size:18px; margin-bottom:4px;}
+  .sub{font-size:12px; color:var(--muted); margin-bottom:22px; text-align:center; max-width:480px;}
+
+  .layout{display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; justify-content:center;}
+
+  .phone{
+    width:300px; height:620px;
+    background:var(--paper);
+    border:2px solid var(--lineDark);
+    border-radius:26px;
+    position:relative; overflow:hidden;
+    flex-shrink:0;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  }
+  .notch{
+    width:90px; height:14px; background:var(--lineDark); border-radius:0 0 10px 10px;
+    position:absolute; top:0; left:50%; transform:translateX(-50%); z-index:20;
+  }
+
+  .stage{position:absolute; inset:0; overflow:hidden;}
+  .screen{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    padding:30px 16px 16px;
+    display:flex; flex-direction:column;
+    background:var(--paper);
+    transform:translateX(100%);
+    opacity:0;
+    transition:transform .32s cubic-bezier(.4,0,.2,1), opacity .28s ease;
+    z-index:1;
+  }
+  .screen.active{transform:translateX(0); opacity:1; z-index:2;}
+  .screen.exit-left{transform:translateX(-100%); opacity:0;}
+  .screen.enter-from-left{transform:translateX(-100%); opacity:0;}
+
+  /* bottom sheet modal */
+  .sheet-backdrop{
+    position:absolute; inset:0; background:rgba(0,0,0,0); pointer-events:none;
+    transition:background .28s ease; z-index:5;
+  }
+  .sheet-backdrop.show{background:rgba(0,0,0,0.35); pointer-events:auto;}
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0; height:78%;
+    background:var(--paper); border-radius:20px 20px 0 0;
+    transform:translateY(100%); transition:transform .34s cubic-bezier(.32,.72,0,1);
+    z-index:6; padding:10px 18px 18px; display:flex; flex-direction:column;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.12);
+  }
+  .sheet.show{transform:translateY(0);}
+  .drag-handle{
+    width:40px; height:4px; background:var(--line); border-radius:3px;
+    margin:4px auto 16px; cursor:grab;
+  }
+
+  /* primitives */
+  .box{background:var(--surface); border:1.5px solid var(--line); border-radius:6px;}
+  .line{height:8px; background:var(--line); border-radius:2px;}
+  .w100{width:100%;} .w80{width:80%;} .w60{width:60%;} .w40{width:40%;}
+  .label{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;}
+  .center{display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:10px;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .topbar .title{font-size:14px; font-weight:700;}
+  .circle{width:26px; height:26px; border-radius:50%; background:var(--surface); border:1.5px solid var(--line);}
+  .back{font-size:12px; color:var(--muted); cursor:pointer;}
+
+  .habit-row{
+    display:flex; align-items:center; gap:10px; padding:12px;
+    margin-bottom:8px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; cursor:pointer; transition:background .15s;
+  }
+  .habit-row:active{background:#e6e6e6;}
+  .checkbox{
+    width:24px; height:24px; border:2px solid var(--lineDark); border-radius:50%;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    transition:transform .18s ease, background .18s ease, border-color .18s ease;
+  }
+  .checkbox svg{opacity:0; transform:scale(.4); transition:opacity .15s, transform .15s;}
+  .checkbox.checked{background:var(--good); border-color:var(--good); transform:scale(1.08);}
+  .checkbox.checked svg{opacity:1; transform:scale(1);}
+  .checkbox.pulse{animation:pulse .32s ease;}
+  @keyframes pulse{0%{transform:scale(1);}45%{transform:scale(1.3);}100%{transform:scale(1.08);}}
+
+  .habit-info{flex:1; display:flex; flex-direction:column; gap:5px;}
+  .habit-name{font-size:13px; font-weight:600;}
+  .streak{font-size:10px; color:var(--muted);}
+  .streak b{color:var(--ink);}
+
+  .bottomnav{display:flex; justify-content:space-around; border-top:1px solid var(--line); padding-top:8px; margin-top:auto;}
+  .navitem{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:9px; color:var(--muted); cursor:pointer;}
+  .navitem .circle{width:18px; height:18px;}
+  .navitem.current{color:var(--ink); font-weight:700;}
+  .navitem.current .circle{background:var(--lineDark); border-color:var(--lineDark);}
+
+  .btn{background:var(--lineDark); color:#fff; border:none; border-radius:8px; padding:12px; text-align:center; font-size:13px; font-weight:700; cursor:pointer; transition:transform .12s;}
+  .btn:active{transform:scale(.97);}
+  .btn.ghost{background:transparent; color:var(--lineDark); border:1.5px solid var(--lineDark);}
+  .link{font-size:11px; color:var(--muted); text-decoration:underline; text-align:center; cursor:pointer;}
+
+  .fab{
+    position:absolute; bottom:70px; right:18px; width:46px; height:46px; border-radius:50%;
+    background:var(--lineDark); color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:24px; cursor:pointer; z-index:4; transition:transform .15s;
+  }
+  .fab:active{transform:scale(.9);}
+
+  .form-field{margin-bottom:14px;}
+  .input{height:36px; margin-top:5px; padding:0 10px; display:flex; align-items:center; font-size:12px; color:var(--muted);}
+  .chip-row{display:flex; gap:6px;}
+  .chip{padding:7px 12px; font-size:11px; border-radius:20px;}
+  .chip.sel{background:var(--lineDark); color:#fff; border-color:var(--lineDark);}
+
+  .dots{display:flex; gap:6px; justify-content:center; margin-top:12px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .25s, transform .25s;}
+  .dot.active{background:var(--lineDark); transform:scale(1.3);}
+
+  .chart{display:flex; align-items:flex-end; gap:6px; height:90px; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--surface);}
+  .bar{flex:1; background:var(--lineDark); opacity:.7; border-radius:3px 3px 0 0; transition:height .5s ease;}
+
+  .toast{
+    position:absolute; bottom:90px; left:50%; transform:translate(-50%,12px);
+    background:var(--lineDark); color:#fff; font-size:12px; padding:10px 18px;
+    border-radius:30px; opacity:0; transition:opacity .25s, transform .25s; z-index:30;
+    display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0);}
+
+  .controls{margin-top:16px; display:flex; flex-wrap:wrap; gap:6px; max-width:300px; justify-content:center;}
+  .ctrl-btn{font-size:10px; padding:6px 9px; border:1px solid var(--lineDark); background:#fff; border-radius:5px; cursor:pointer;}
+  .ctrl-btn:hover{background:#eee;}
+
+  .annot{width:260px; font-size:11.5px; line-height:1.55; background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px;}
+  .annot h3{font-size:12px; margin:0 0 8px;}
+</style>
+</head>
+<body>
+
+<h1>Habitly — Interactive Prototype</h1>
+<div class="sub">Real navigation transitions, a draggable bottom sheet, and tap micro-interactions. Use the buttons below the phone, or tap directly inside the prototype.</div>
+
+<div class="layout">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="stage" id="stage">
+
+      <div class="screen active" id="splash">
+        <div class="center">
+          <div class="box" style="width:70px;height:70px;border-radius:18px;"></div>
+          <div class="line w60"></div>
+        </div>
+      </div>
+
+      <div class="screen" id="onboarding">
+        <div class="center" id="ob-content">
+          <div class="box" style="width:140px;height:140px;border-radius:14px;"></div>
+          <div class="line w80" id="ob-line1"></div>
+          <div class="line w60" id="ob-line2"></div>
+        </div>
+        <div class="dots" id="ob-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+        <div style="display:flex; justify-content:space-between; margin-top:14px;">
+          <div class="link" onclick="go('login','right')">Skip</div>
+          <div class="btn" style="padding:9px 18px;" onclick="nextSlide()">Next</div>
+        </div>
+      </div>
+
+      <div class="screen" id="login">
+        <div class="back" onclick="go('onboarding','left')">&lt; Back</div>
+        <div class="center" style="flex:0; margin:16px 0 24px;">
+          <div class="box" style="width:60px;height:60px;border-radius:50%;"></div>
+        </div>
+        <div class="form-field"><div class="label">Email</div><div class="box input">you@email.com</div></div>
+        <div class="form-field"><div class="label">Password</div><div class="box input">••••••••</div></div>
+        <div class="btn" onclick="go('home','right')">Log In</div>
+        <div class="link" style="margin-top:12px;" onclick="go('home','right')">Continue as guest</div>
+      </div>
+
+      <div class="screen" id="home">
+        <div class="topbar"><div class="title">Today</div><div class="circle"></div></div>
+
+        <div id="habitlist">
+          <div class="habit-row" data-id="h1" onclick="openDetail(event,'Static Bloom', 5)">
+            <div class="checkbox checked" onclick="toggleCheck(event,this)"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="habit-info"><div class="habit-name">Static Bloom — read 10 min</div><div class="streak">streak: <b id="streak-h1">5</b> days</div></div>
+          </div>
+          <div class="habit-row" data-id="h2" onclick="openDetail(event,'Drink water', 2)">
+            <div class="checkbox" onclick="toggleCheck(event,this)"></div>
+            <div class="habit-info"><div class="habit-name">Drink water</div><div class="streak">streak: <b id="streak-h2">2</b> days</div></div>
+          </div>
+          <div class="habit-row" data-id="h3" onclick="openDetail(event,'Morning stretch', 0)">
+            <div class="checkbox" onclick="toggleCheck(event,this)"></div>
+            <div class="habit-info"><div class="habit-name">Morning stretch</div><div class="streak">streak: <b id="streak-h3">0</b> days</div></div>
+          </div>
+        </div>
+
+        <div class="fab" onclick="openSheet()">+</div>
+
+        <div class="bottomnav">
+          <div class="navitem current"><div class="circle"></div>Home</div>
+          <div class="navitem" onclick="go('profile','right')"><div class="circle"></div>Stats</div>
+          <div class="navitem"><div class="circle"></div>Settings</div>
+        </div>
+      </div>
+
+      <div class="screen" id="detail">
+        <div class="back" onclick="go('home','left')">&lt; Back</div>
+        <div class="box" style="height:54px;display:flex;align-items:center;padding:0 12px;gap:10px;margin-top:10px;">
+          <div class="box" style="width:30px;height:30px;border-radius:8px;"></div>
+          <div class="habit-name" id="detail-title">Habit</div>
+        </div>
+        <div class="label" style="margin-top:18px;">This week</div>
+        <div class="chart" id="detail-chart">
+          <div class="bar" style="height:30%;"></div><div class="bar" style="height:60%;"></div>
+          <div class="bar" style="height:80%;"></div><div class="bar" style="height:40%;"></div>
+          <div class="bar" style="height:90%;"></div><div class="bar" style="height:20%;"></div>
+          <div class="bar" style="height:70%;"></div>
+        </div>
+        <div class="label" style="margin-top:18px;">Current streak</div>
+        <div class="habit-name" id="detail-streak" style="font-size:22px;">5 days</div>
+        <div class="btn ghost" style="margin-top:auto;">Edit habit</div>
+      </div>
+
+      <div class="screen" id="profile">
+        <div class="topbar"><div class="title">Profile</div><div class="circle"></div></div>
+        <div class="center" style="flex:0; margin-bottom:14px;">
+          <div class="box" style="width:60px;height:60px;border-radius:50%;"></div>
+          <div class="line w40"></div>
+        </div>
+        <div class="label">Weekly overview</div>
+        <div class="chart">
+          <div class="bar" style="height:50%;"></div><div class="bar" style="height:70%;"></div>
+          <div class="bar" style="height:30%;"></div><div class="bar" style="height:90%;"></div>
+          <div class="bar" style="height:60%;"></div><div class="bar" style="height:40%;"></div>
+          <div class="bar" style="height:80%;"></div>
+        </div>
+        <div class="bottomnav">
+          <div class="navitem" onclick="go('home','left')"><div class="circle"></div>Home</div>
+          <div class="navitem current"><div class="circle"></div>Stats</div>
+          <div class="navitem"><div class="circle"></div>Settings</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sheet-backdrop" id="backdrop" onclick="closeSheet()"></div>
+    <div class="sheet" id="sheet">
+      <div class="drag-handle"></div>
+      <div class="topbar"><div class="title">New Habit</div><div class="link" onclick="closeSheet()">Cancel</div></div>
+      <div class="form-field"><div class="label">Habit name</div><div class="box input" id="newHabitName">Drink water</div></div>
+      <div class="form-field">
+        <div class="label">Icon</div>
+        <div class="chip-row">
+          <div class="box" style="width:32px;height:32px;border-radius:8px;"></div>
+          <div class="box" style="width:32px;height:32px;border-radius:8px;background:#e3e3e3;"></div>
+          <div class="box" style="width:32px;height:32px;border-radius:8px;"></div>
+        </div>
+      </div>
+      <div class="form-field">
+        <div class="label">Frequency</div>
+        <div class="chip-row">
+          <div class="box chip sel">Daily</div><div class="box chip">Weekly</div><div class="box chip">Custom</div>
+        </div>
+      </div>
+      <div class="btn" style="margin-top:auto;" onclick="saveHabit()">Save Habit</div>
+    </div>
+
+    <div class="toast" id="toast">✓ Habit added</div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <div class="controls" id="stepControls"></div>
+    <div class="annot" id="annotBox"><h3>Tip</h3>Tap checkboxes, the + button, and rows directly inside the phone — it behaves like a real app, not just linked screens.</div>
+  </div>
+</div>
+
+<script>
+  let current = 'splash';
+  const notes = {
+    splash:'App launch. Auto-style placeholder, no interaction.',
+    onboarding:'Slides transition with a swipe-style animation; dots animate in sync. "Skip" stays visible at every slide.',
+    login:'Guest mode is one tap away — no forced signup before seeing value.',
+    home:'Tap a checkbox: it pulses, fills, and the streak number updates immediately — that\\'s the core 5-second daily loop.',
+    detail:'Opened by tapping a row (not the streak badge directly — tested and simplified after usability feedback).',
+    profile:'Weekly aggregate, reached via the bottom tab — separate from the fast daily-logging screen on purpose.'
+  };
+
+  function setAnnot(id){
+    const n = notes[id];
+    if(n) document.getElementById('annotBox').innerHTML = '<h3>'+id.charAt(0).toUpperCase()+id.slice(1)+'</h3>'+n;
+  }
+
+  function go(id, dir){
+    const cur = document.getElementById(current);
+    const next = document.getElementById(id);
+    if(dir==='right'){
+      next.style.transform='translateX(100%)'; next.style.opacity='0';
+      requestAnimationFrame(()=>{
+        cur.classList.remove('active'); cur.style.transform='translateX(-100%)'; cur.style.opacity='0';
+        next.classList.add('active'); next.style.transform='translateX(0)'; next.style.opacity='1';
+      });
+    } else {
+      next.style.transform='translateX(-100%)'; next.style.opacity='0';
+      requestAnimationFrame(()=>{
+        cur.classList.remove('active'); cur.style.transform='translateX(100%)'; cur.style.opacity='0';
+        next.classList.add('active'); next.style.transform='translateX(0)'; next.style.opacity='1';
+      });
+    }
+    current = id;
+    setAnnot(id);
+    highlightControl(id);
+  }
+
+  // onboarding slide content cycling
+  const obSlides = [
+    {l1:'Build small habits.', l2:'Track them in seconds.'},
+    {l1:'See your streaks grow.', l2:'Progress over perfection.'},
+    {l1:'Gentle reminders.', l2:'Never miss a beat.'}
+  ];
+  let obIndex = 0;
+  function nextSlide(){
+    obIndex = (obIndex+1) % obSlides.length;
+    const dots = document.querySelectorAll('#ob-dots .dot');
+    dots.forEach((d,i)=>d.classList.toggle('active', i===obIndex));
+    const content = document.getElementById('ob-content');
+    content.style.transition='opacity .18s'; content.style.opacity='0';
+    setTimeout(()=>{
+      document.getElementById('ob-line1').style.width = ['80%','70%','85%'][obIndex];
+      content.opacity = '';
+      content.style.opacity='1';
+    },180);
+    if(obIndex===obSlides.length-1){
+      // last slide -> next press goes to login
+    }
+  }
+  document.querySelector('#onboarding .btn').addEventListener('click', function(e){
+    if(obIndex===obSlides.length-1){ go('login','right'); obIndex=0; }
+  });
+
+  function toggleCheck(e, el){
+    e.stopPropagation();
+    el.classList.toggle('checked');
+    el.classList.remove('pulse');
+    requestAnimationFrame(()=>el.classList.add('pulse'));
+    const row = el.closest('.habit-row');
+    const id = row.dataset.id;
+    const streakEl = document.getElementById('streak-'+id);
+    let val = parseInt(streakEl.textContent,10);
+    if(el.classList.contains('checked')){ val += 1; showToast('✓ Marked done'); }
+    else { val = Math.max(0,val-1); }
+    streakEl.textContent = val;
+  }
+
+  function openDetail(e, name, streak){
+    document.getElementById('detail-title').textContent = name;
+    document.getElementById('detail-streak').textContent = streak + ' days';
+    go('detail','right');
+  }
+
+  function openSheet(){
+    document.getElementById('backdrop').classList.add('show');
+    document.getElementById('sheet').classList.add('show');
+  }
+  function closeSheet(){
+    document.getElementById('backdrop').classList.remove('show');
+    document.getElementById('sheet').classList.remove('show');
+  }
+  function saveHabit(){
+    closeSheet();
+    setTimeout(()=>showToast('✓ Habit added'), 200);
+  }
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1500);
+  }
+
+  // step controls (jump to any screen for review)
+  const steps = [
+    {id:'splash', label:'1. Splash'},
+    {id:'onboarding', label:'2. Onboarding'},
+    {id:'login', label:'3. Login'},
+    {id:'home', label:'4. Home'},
+    {id:'detail', label:'5. Detail'},
+    {id:'profile', label:'6. Profile'},
+  ];
+  const controls = document.getElementById('stepControls');
+  steps.forEach(s=>{
+    const b = document.createElement('div');
+    b.className='ctrl-btn'; b.textContent=s.label; b.dataset.id=s.id;
+    b.onclick=()=>go(s.id, s.id==='splash'?'left':'right');
+    controls.appendChild(b);
+  });
+  function highlightControl(id){
+    document.querySelectorAll('.ctrl-btn').forEach(b=>{
+      const on = b.dataset.id===id;
+      b.style.background = on ? '#eee' : '#fff';
+      b.style.fontWeight = on ? '700' : '400';
+    });
+  }
+  highlightControl('splash');
+</script>
+
+</body>
+</html>
